@@ -1,0 +1,61 @@
+/f (day2.txt) (r) file def
+/lines [ { f 1024 string readline not { pop exit } if } loop ] def
+f closefile
+
+/dbg { pstack (\n) print} def
+/qdbg { pstack (\n) print quit } def
+
+/makestring {
+    dup length string
+    dup /NullEncode filter
+    3 2 roll
+    { 1 index exch write } forall
+    closefile
+} def
+
+% str1 str2 diffbyone
+% common bool
+/diffbyone {
+    /str2 exch def
+    /str1 exch def
+    /countdiff 0 def
+
+    mark
+
+    0 1 str1 length 1 sub {
+        dup str1 exch get
+        exch str2 exch get
+
+        1 index eq {
+            % do nothing, accumulate common characters
+        } {
+            pop
+            /countdiff countdiff 1 add def
+        } ifelse
+    } for
+
+    ] makestring
+
+    countdiff 1 eq
+} def
+
+0 1 lines length 1 sub {
+    % start at idx + 1
+    dup 1 add
+    1  % step 1
+    lines length 1 sub {
+        % get "parent" line
+        1 index lines exch get
+
+        % get "current" line
+        exch lines exch get
+
+        diffbyone {
+            (found match! ) print print
+            quit
+        } {
+            % pop off the "common" characters -- it's garbage data
+            pop
+        } ifelse
+    } for
+} for
