@@ -1,0 +1,66 @@
+/dbg { pstack (\n) print} def
+/qdbg { pstack (\n) print quit } def
+
+/f (day2.txt) (r) file def
+/lines [ { f 1024 string readline not { pop exit } if } loop ] def
+f closefile
+
+% str1 n hasndup
+% bool
+/hasndup {
+    /counts 1 dict def
+    exch
+    {
+        dup counts exch
+        known {
+            counts exch
+            dup counts exch get
+            1 add put
+        } {
+            counts exch 1 put
+        } ifelse
+    } forall
+
+    % store whether we've seen a letter with n duplicates
+    false
+    counts {
+        % we don't care what the key is
+        exch pop
+
+        % grab the n from input
+        2 index
+        eq {
+            pop
+            true
+            exit
+        } {
+            pop
+            false
+        } ifelse
+    } forall
+    % get rid of n
+    exch pop
+} def
+
+/twice 0 def
+/thrice 0 def
+
+lines {
+    dup
+
+    2 hasndup {
+        /twice twice 1 add def
+    } if
+
+    3 hasndup {
+        /thrice thrice 1 add def
+    } if
+} forall
+
+twice 8 string cvs print
+( * ) print
+thrice 8 string cvs print
+( = ) print
+twice thrice mul 8 string cvs print
+
+quit
