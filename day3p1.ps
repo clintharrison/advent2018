@@ -1,0 +1,117 @@
+/dbg { pstack (\n) print} def
+/qdbg { pstack (\n) print quit } def
+
+/f (day3.txt) (r) file def
+/lines [ { f 1024 string readline not { pop exit } if } loop ] def
+f closefile
+
+/makestring {
+    dup length string
+    dup /NullEncode filter
+    3 2 roll
+    { 1 index exch write } forall
+    closefile
+} def
+
+% #{claim} @ {posx},{posy}: {width}x{height}
+/makeclaim {
+    mark
+    6 1 roll
+    ]
+} def
+
+/claim_num { 0 get } def
+/claim_x { 1 get } def
+/claim_y { 2 get } def
+/claim_w { 3 get } def
+/claim_h { 4 get } def
+
+/chomp {
+    anchorsearch
+    not { (Failed to chomp ) print pstack quit } if
+    pop
+} def
+
+/keep_to {
+    search
+    pop exch pop % eat success and search string
+    cvi % we're always reading ints here, lol
+    exch % swap accumulated value with rest of string
+} def
+
+/parse_line {
+    (#) chomp
+    ( ) keep_to
+    (@ ) chomp
+    (,) keep_to
+    (: ) keep_to
+    (x) keep_to
+    % do nothing for last value except convert to int
+    cvi
+
+    makeclaim
+} def
+
+/CLOTH_SIZE 1000 def
+/cloth CLOTH_SIZE CLOTH_SIZE mul array def
+
+% initialize cloth to all 0s
+0 1 cloth length 1 sub { cloth exch 0 put } for
+
+/printcloth {
+    0 1 cloth length 1 sub {
+        dup
+        cloth exch get dup
+        0 eq {
+            pop
+            (.) print
+        } {
+            10 string cvs print
+        } ifelse
+
+        1 add CLOTH_SIZE mod 0 eq { (\n) print } if
+    } for
+} def
+
+/apply_claim {
+    dup
+    dup claim_y exch
+    1 exch
+    dup claim_y exch claim_h add 1 sub
+    {
+        1 index dup claim_x exch
+        1 exch
+        dup claim_x exch claim_w add 1 sub
+        {
+            1 index
+            % stack is (claim x y)
+            % so, get the pos in the array
+            CLOTH_SIZE mul add
+            % get current value at that position
+            dup cloth exch get
+            % get array and roll
+            cloth
+            3 1 roll
+            % so its pos can be incremented
+            1 add
+            put
+        } for
+        % pop the starting y off, which we probably dup'd extraneously somewhere
+        pop
+    } for
+} def
+
+lines {
+    parse_line apply_claim
+} forall
+
+0
+cloth {
+    2 ge { 1 add } if
+} forall
+
+%printcloth
+
+=
+(\n) print
+quit
