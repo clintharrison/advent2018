@@ -99,19 +99,60 @@ f closefile
         % pop the starting y off, which we probably dup'd extraneously somewhere
         pop
     } for
+    pop
 } def
 
 lines {
     parse_line apply_claim
 } forall
 
+
+% part 1
 0
 cloth {
     2 ge { 1 add } if
 } forall
-
-%printcloth
-
+% print part 1
 =
-(\n) print
+
+
+% part 2
+/claim_all_ones {
+    /ret true def
+    dup
+    dup claim_y exch
+    1 exch
+    dup claim_y exch claim_h add 1 sub
+    {
+        1 index dup claim_x exch
+        1 exch
+        dup claim_x exch claim_w add 1 sub
+        {
+            1 index
+            % stack is (claim x y)
+            % so, get the pos in the array
+            CLOTH_SIZE mul add
+            % get current value at that position
+            cloth exch get
+            1 ne {
+                /ret false def
+                exit
+            } if
+        } for
+        pop
+    } for
+    ret
+} def
+
+lines {
+    parse_line
+    claim_all_ones
+    true eq {
+        (found claim: ) print claim_num =
+        %exit
+    } {
+        pop
+    } ifelse
+} forall
+
 quit
