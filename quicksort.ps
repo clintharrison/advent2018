@@ -1,0 +1,66 @@
+% ugh, this whole file
+
+(utils.ps) run
+
+/_partition {
+    7 dict begin
+    /hi exch def
+    /lo exch def
+    /arr exch def
+
+    /pivot arr hi get def
+    /i lo def
+
+    lo 1 hi 1 sub {
+        /j exch def
+        arr j get pivot lt {
+            i j ne {
+                /tmp arr i get def
+                arr i arr j get put
+                arr j tmp put
+            } if
+            /i i 1 add def
+        } if
+    } for
+    /tmp arr i get def
+    arr i arr hi get put
+    arr hi tmp put
+    i
+    end
+} def
+
+% arr lo hi _quicksort
+% sorted
+%
+% sorts arr *in place*!
+/_quicksort {
+    4 dict begin
+
+    /hi exch def
+    /lo exch def
+    /arr exch def
+
+    arr lo hi _partition /part exch def
+
+    arr part 1 add hi % recurse on (arr, lo, p-1)
+    2dup lt           % check base case for first recursive call
+    arr lo part 1 sub % recurse on (arr, p + 1, hi)
+    2dup lt           % check base case for second call
+
+    % pop the dict stack before we recurse
+    end
+
+    { _quicksort } { pop pop pop } ifelse
+    { _quicksort } { pop pop pop } ifelse
+} def
+
+% sort an array...
+% leaves a copy on the stack
+/quicksort {
+    % make a copy of the array passed in
+    mark exch aload pop ]
+    % dup the pointer to the newly copied array, so we leave it on the stack when we sort it in place
+    dup
+
+    dup 0 exch length 1 sub _quicksort
+} def
